@@ -3,6 +3,7 @@ const rssCombiner = require("rss-combiner");
 
 const feedConfig = {
     title: "CZPodcast",
+    site_url: "https://soundcloud.com/czpodcast-1",
     size: 2000,
     feeds: [
         "https://feeds.soundcloud.com/users/soundcloud:users:164186340/sounds.rss",
@@ -11,7 +12,7 @@ const feedConfig = {
     pubDate: new Date(),
 };
 exports.rss = functions.https.onRequest((request, response) => {
-    functions.logger.info("RSS invoked");
+    functions.logger.info("RSS invoked2");
     rssCombiner(feedConfig)
         .then(function(combinedFeed) {
             return combinedFeed.xml();
