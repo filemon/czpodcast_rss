@@ -9,6 +9,35 @@ const OLD_FEED = "https://firebasestorage.googleapis.com/v0/b/" +
     "czpodcast-f4d9e.appspot.com/o/rss_file.xml?alt=media&" +
     "token=c9a4e50c-f8cd-4130-a148-50b82d15872e";
 
+// Episodes whose audio was replaced on Soundcloud. Spotify caches audio
+// by guid, so a new guid forces it to ingest the episode again.
+const GUID_OVERRIDES = {
+    // CZ Podcast 357 - wrong audio file uploaded on 2026-10-23
+    "tag:soundcloud,2010:tracks/2424567123":
+        "tag:soundcloud,2010:tracks/2424567123-v2",
+};
+
+/**
+ * Replaces guids of items listed in GUID_OVERRIDES
+ * @param {Array} items - Array of RSS items
+ * @return {Array} Items with overridden guids
+ */
+function applyGuidOverrides(items) {
+    return items.map((item) => {
+        if (!item.guid) {
+            return item;
+        }
+        const guid = item.guid[0];
+        const value = typeof guid === "string" ? guid : guid._;
+        const override = GUID_OVERRIDES[value];
+        if (override) {
+            item.guid[0] = typeof guid === "string" ?
+                override : {...guid, _: override};
+        }
+        return item;
+    });
+}
+
 /**
  * Fetches and parses RSS feed from URL
  * @param {string} feedUrl - URL of the RSS feed
@@ -89,7 +118,7 @@ async function combineFeeds() {
     const channel = combinedFeed.rss.channel[0];
 
     // Get items from both feeds
-    const soundcloudItems = channel.item || [];
+    const soundcloudItems = applyGuidOverrides(channel.item || []);
     const oldItems = oldFeed.rss && oldFeed.rss.channel &&
         oldFeed.rss.channel[0].item ?
         oldFeed.rss.channel[0].item :
