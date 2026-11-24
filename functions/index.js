@@ -27,6 +27,11 @@ async function fetchAndParseFeed(feedUrl) {
  */
 function enrichOldFeedItems(items) {
     return items.map((item) => {
+        // Add guid if missing; link is unique per episode, enclosure is not
+        if (!item.guid && item.link) {
+            item.guid = [{_: item.link[0], $: {isPermaLink: "false"}}];
+        }
+
         // Ensure itunes:author exists
         if (!item["itunes:author"]) {
             item["itunes:author"] = ["CZPodcast"];
